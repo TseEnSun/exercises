@@ -145,9 +145,10 @@ lowerAndGreater n list =
     show lts ++ 
     " elements"
         where
-            (gls, lts) = foldl (\(a, b) -> 
-                \x -> 
-                    if x < n then (a + 1, b) 
-                    else if x > n then (a, b + 1)
-                    else (a, b)
-                    ) (0, 0) list
+            (gls, lts) = foldl (
+                \(a, b) -> 
+                    \x -> 
+                        if x < n then (a + 1, b) 
+                        else if x > n then (a, b + 1)
+                        else (a, b)
+            ) (0, 0) list
