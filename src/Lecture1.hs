@@ -69,7 +69,7 @@ sumOfSquares x y = x*x + y*y
 -}
 -- DON'T FORGET TO SPECIFY THE TYPE IN HERE
 lastDigit :: Int -> Int
-lastDigit n = mod (abs n) 10
+lastDigit n =  abs n `mod` 10
 
 {- | Write a function that takes three numbers and returns the
 difference between the biggest number and the smallest one.
@@ -85,9 +85,9 @@ function.
 -}
 minmax :: Int -> Int -> Int -> Int
 minmax x y z = 
-    let max = maximum [x, y, z]
-        min = minimum [x, y, z]
-    in max - min
+    let maxVal = maximum [x, y, z]
+        minVal = minimum [x, y, z]
+    in maxVal - minVal
 
 {- | Implement a function that takes a string, start and end positions
 and returns a substring of a given string from the start position to
@@ -109,9 +109,7 @@ subString start end str
     | start < 0 = subString 0 end str
     | end < 0 = ""
     | start > end = ""
-subString start end str = 
-    let len = length str
-    in take (end - start + 1) $ drop start str
+subString start end str = take (end - start + 1) $ drop start str
 
 {- | Write a function that takes a String — space separated numbers,
 and finds a sum of the numbers inside this string.
@@ -121,21 +119,9 @@ and finds a sum of the numbers inside this string.
 
 The string contains only spaces and/or numbers.
 -}
-split :: Char -> String -> String -> [String]
-split c [] [] = []
-split c acc [] = [acc]
-split c acc (x:xs)
-    | (x == c) && (not $ null acc) = [acc] ++ (split c "" xs)
-    | x == c = split c acc xs
-    | otherwise = split c (acc ++ [x]) xs
-
-sumStr :: [String] -> Int
-sumStr [] = 0
-sumStr (x:xs) = (read x :: Int) + sumStr xs
-
 strSum :: String -> Int
-strSum "" = 0
-strSum str = sumStr $ split ' ' "" str
+strSum str = sum (map read (words str))
+strSum str = sum $ map (\x -> read x :: Int) $ words str
 
     
 {- | Write a function that takes a number and a list of numbers and
@@ -160,5 +146,10 @@ lowerAndGreater n list =
     show lts ++ 
     " elements"
         where
-            gls = length $ filter (< n) list
-            lts = length $ filter (> n) list
+            (gls, lts) = foldl (
+                \(a, b) -> 
+                    \x -> 
+                        if x < n then (a + 1, b) 
+                        else if x > n then (a, b + 1)
+                        else (a, b)
+                ) (0, 0) list
