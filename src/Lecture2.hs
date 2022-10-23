@@ -66,7 +66,7 @@ lazyProduct (x:xs) = x * lazyProduct xs
 -}
 duplicate :: [a] -> [a]
 duplicate [] = []
-duplicate (x:xs) = [x, x] ++ duplicate xs
+duplicate (x:xs) = x : x : duplicate xs
 
 {- | Implement function that takes index and a list and removes the
 element at the given position. Additionally, this function should also
@@ -84,10 +84,10 @@ removeAt n ls = removeAt' n ls []
       removeAt' :: Int -> [a] -> [a] -> (Maybe a, [a])
       removeAt' 0 [] preLs = (Nothing, preLs)
       removeAt' _ [] preLs = (Nothing, preLs)
-      removeAt' n (x:xs) preLs
-        | n == 0 = (Just x, preLs ++ xs)
-        | n < 0 = (Nothing, x:xs)
-        | otherwise = removeAt' (n - 1) xs (preLs ++ [x])
+      removeAt' n' (x:xs) preLs
+        | n' == 0 = (Just x, preLs ++ xs)
+        | n' < 0 = (Nothing, x:xs)
+        | otherwise = removeAt' (n' - 1) xs (preLs ++ [x])
 
 
 {- | Write a function that takes a list of lists and returns only
@@ -252,8 +252,7 @@ True
 isIncreasing :: [Int] -> Bool
 isIncreasing [] = True
 isIncreasing (_:[]) = True
-isIncreasing (x1:x2:xs) = if x1 <= x2 then isIncreasing (x2:xs)
-                          else False
+isIncreasing (x1 : x2 : xs) = x1 < x2 && isIncreasing (x2 : xs)
 
 {- | Implement a function that takes two lists, sorted in the
 increasing order, and merges them into new list, also sorted in the
@@ -268,8 +267,9 @@ verify that.
 merge :: [Int] -> [Int] -> [Int]
 merge [] ys = ys
 merge xs [] = xs
-merge (x:xs) (y:ys) = if x <= y then [x] ++ merge (xs) (y:ys)
-                      else [y] ++ merge (x:xs) (ys)
+merge (x:xs) (y:ys) = if x < y then x : merge (xs) (y:ys)
+                      else if x > y then y : merge (x:xs) (ys)
+                      else x : y : merge xs ys
 
 {- | Implement the "Merge Sort" algorithm in Haskell. The @mergeSort@
 function takes a list of numbers and returns a new list containing the
@@ -290,7 +290,12 @@ mergeSort [] = []
 mergeSort [x] = [x]
 mergeSort ls = merge sortLeft sortRight
     where
-      (left, right) = splitAt (length ls `div` 2) ls
+      (left, right) = simpleSplit 0 ls ([], [])
+      simpleSplit :: Int -> [Int] -> ([Int], [Int]) -> ([Int], [Int])
+      simpleSplit _ [] (evens, odds) = (evens, odds)
+      simpleSplit p (x:xs) (evens, odds)
+          | odd p = simpleSplit (p+1) xs (evens, x : odds)
+          | otherwise = simpleSplit (p+1) xs (x : evens, odds)
       sortLeft = mergeSort left 
       sortRight = mergeSort right
 
@@ -389,7 +394,7 @@ constantFolding expr = formatExpr constants variableExprs
       format' (x:xs) = Add x (format' xs)
       (constants, variableExprs) = parseAcc ([], []) expr
       parseAcc :: ([Int], [Expr]) -> Expr -> ([Int], [Expr])
-      parseAcc (lits, vars) expr = case expr of
+      parseAcc (lits, vars) expr' = case expr' of
         Lit x               -> (lits ++ [x], vars)
         Var x               -> (lits, vars ++ [(Var x)])
         Add (Lit x) expr2   -> parseAcc (lits ++ [x], vars) expr2
