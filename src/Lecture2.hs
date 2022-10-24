@@ -180,22 +180,21 @@ data Knight = Knight
     , knightEndurance :: Int
     }
 
-data Treasure = Treasure String
-   deriving (Show)
-
-data Chest = Chest
-    { gold          :: Int
-    , maybeTreasure :: Maybe Treasure
-    }
-
-data DragonType = Red | Block | Green
-
-data Dragon = Dragon
-    { dragonType      :: DragonType
-    , dragonHealth    :: Int
-    , dragonFirePower :: Int
-    , dragonStomachs  :: Chest
-    }
+data Dragon = 
+  Red { dragonHealth    :: Int
+      , dragonFirePower :: Int
+      , gold            :: Int
+      , treasure        :: String
+      }
+  | Block { dragonHealth    :: Int
+          , dragonFirePower :: Int
+          , gold            :: Int
+          , treasure        :: String
+          }
+  | Green { dragonHealth    :: Int
+          , dragonFirePower :: Int
+          , gold            :: Int
+          }
 
 dragonFight :: Knight -> Dragon -> String
 dragonFight knight dragon = fight 0 knight dragon
@@ -209,24 +208,24 @@ dragonFight knight dragon = fight 0 knight dragon
           knightHealth' = if strikes' `mod` 10 == 0 
                           then knightHealth knight - dragonFirePower dragon
                           else knightHealth knight
-          experience = case dragonType dragon of Red   -> "100"
-                                                 Block -> "150"
-                                                 Green -> "200"
-          treasure = case dragonType dragon of Green -> Nothing
-                                               _ -> maybeTreasure $ dragonStomachs dragon
+          experience = case dragon of Red _ _ _ _   -> "100"
+                                      Block _ _ _ _ -> "150"
+                                      Green _ _ _   -> "200"
+          treasure' = case dragon of Green _ _ _ -> Nothing
+                                     _           -> Just (treasure dragon)
         in if endurance' == 0 then "Knight Run Away"
-            else if dragonHealth' <= 0 then case treasure of 
-                                              Just t -> "Dragon dead, the knight got " ++ 
-                                                        show (gold $ dragonStomachs dragon) ++ 
-                                                        ", " ++ 
-                                                        experience ++ 
-                                                        " experience, and " ++ 
-                                                        show t
-                                              _ -> "Dragon dead, the knight got " ++ 
-                                                    show (gold $ dragonStomachs dragon) ++ 
-                                                    " and " ++ 
-                                                    experience ++ 
-                                                    " experience."
+            else if dragonHealth' <= 0 then case treasure' of 
+              Just t -> "Dragon dead, the knight got " ++ 
+                        show (gold dragon) ++ 
+                        ", " ++ 
+                        experience ++ 
+                        " experience, and " ++ 
+                        show t
+              _      -> "Dragon dead, the knight got " ++ 
+                        show (gold dragon) ++ 
+                        " and " ++ 
+                        experience ++ 
+                        " experience."
             else if knightHealth' <= 0 then "Knight Dead"
             else fight strikes' (knight {knightHealth = knightHealth'}) (dragon {dragonHealth = dragonHealth'})
         
