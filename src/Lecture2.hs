@@ -79,15 +79,12 @@ return the removed element.
 (Nothing,[1,2,3,4,5])
 -}
 removeAt :: Int -> [a] -> (Maybe a, [a])
-removeAt n ls = removeAt' n ls []
-    where
-      removeAt' :: Int -> [a] -> [a] -> (Maybe a, [a])
-      removeAt' 0 [] preLs = (Nothing, preLs)
-      removeAt' _ [] preLs = (Nothing, preLs)
-      removeAt' n' (x:xs) preLs
-        | n' == 0 = (Just x, preLs ++ xs)
-        | n' < 0 = (Nothing, x:xs)
-        | otherwise = removeAt' (n' - 1) xs (preLs ++ [x])
+removeAt _ [] = (Nothing, [])
+removeAt 0 (x:xs) = (Just x, xs)
+removeAt n (x:xs)
+  | n < 0 = (Nothing, (x:xs))
+  | otherwise = let (val, rest) = removeAt (n - 1) xs
+                in (val, x : rest)
 
 
 {- | Write a function that takes a list of lists and returns only
