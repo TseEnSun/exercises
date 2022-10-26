@@ -286,15 +286,15 @@ mergeSort [] = []
 mergeSort [x] = [x]
 mergeSort ls = merge sortLeft sortRight
     where
-      (left, right) = simpleSplit 0 ls ([], [])
-      simpleSplit :: Int -> [Int] -> ([Int], [Int]) -> ([Int], [Int])
-      simpleSplit _ [] (evens, odds) = (evens, odds)
-      simpleSplit p (x:xs) (evens, odds)
-          | odd p = simpleSplit (p+1) xs (evens, x : odds)
-          | otherwise = simpleSplit (p+1) xs (x : evens, odds)
+      (left, right) = simpleSplit ls
+      simpleSplit :: [Int] -> ([Int], [Int])
+      simpleSplit [] = ([], [])
+      simpleSplit [x] = ([x], [])
+      simpleSplit (x : y : rest) = 
+        let (xs, ys) = simpleSplit rest
+        in (x:xs, y:ys)
       sortLeft = mergeSort left 
       sortRight = mergeSort right
-
 
 {- | Haskell is famous for being a superb language for implementing
 compilers and interpeters to other programming languages. In the next
