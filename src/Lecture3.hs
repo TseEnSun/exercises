@@ -52,7 +52,7 @@ data Weekday
     | Friday
     | Saturday
     | Sunday
-    deriving (Show, Eq)
+    deriving (Show, Eq, Enum, Bounded)
 
 {- | Write a function that will display only the first three letters
 of a weekday.
@@ -83,7 +83,22 @@ Tuesday
   would work for **any** enumeration type in Haskell (e.g. 'Bool',
   'Ordering') and not just 'Weekday'?
 -}
-next = error "TODO"
+
+class (Eq a,Enum a, Bounded a) => CircleEnum a where
+  cpred :: a -> a
+  cpred x 
+    | x == minBound = maxBound
+    | otherwise = pred x
+
+  csucc :: a -> a
+  csucc x
+    | x == maxBound = minBound
+    | otherwise = succ x
+
+instance CircleEnum Weekday
+
+next :: Weekday -> Weekday
+next = csucc
 
 {- | Implement a function that calculates number of days from the first
 weekday to the second.
@@ -93,7 +108,10 @@ weekday to the second.
 >>> daysTo Friday Wednesday
 5
 -}
-daysTo = error "TODO"
+daysTo :: Weekday -> Weekday -> Int
+daysTo x y 
+  | x == y = 0
+  | otherwise = 1 + daysTo (csucc x) y
 
 {-
 
@@ -109,9 +127,10 @@ newtype Gold = Gold
 
 -- | Addition of gold coins.
 instance Semigroup Gold where
-
+  (<>) x y = Gold (unGold x + unGold y) 
 
 instance Monoid Gold where
+  mempty = Gold 0
 
 
 {- | A reward for completing a difficult quest says how much gold
@@ -126,9 +145,14 @@ data Reward = Reward
     } deriving (Show, Eq)
 
 instance Semigroup Reward where
-
+  (<>) x y = Reward { rewardGold = rewardGold x <> rewardGold y
+                    , rewardSpecial = rewardSpecial x || rewardSpecial y
+                    }
 
 instance Monoid Reward where
+  mempty = Reward { rewardGold = Gold 0
+                  , rewardSpecial = False
+                  }
 
 
 {- | 'List1' is a list that contains at least one element.
@@ -138,6 +162,8 @@ data List1 a = List1 a [a]
 
 -- | This should be list append.
 instance Semigroup (List1 a) where
+  (<>) (List1 x []) (List1 y ys) = List1 x (y : ys)
+  (<>) (List1 x xs) (List1 y ys) = List1 x (xs ++ y : ys)
 
 
 {- | Does 'List1' have the 'Monoid' instance? If no then why?
@@ -160,10 +186,14 @@ monsters, you should get a combined treasure and not just the first
 🕯 HINT: You may need to add additional constraints to this instance
   declaration.
 -}
-instance Semigroup (Treasure a) where
+instance (Semigroup a) => Semigroup (Treasure a) where
+  (<>) NoTreasure NoTreasure = NoTreasure
+  (<>) NoTreasure (SomeTreasure x) = SomeTreasure x
+  (<>) (SomeTreasure x) NoTreasure = SomeTreasure x
+  (<>) (SomeTreasure x) (SomeTreasure y) = SomeTreasure (x <> y)
 
-
-instance Monoid (Treasure a) where
+instance (Semigroup a) => Monoid (Treasure a) where
+  mempty = NoTreasure
 
 
 {- | Abstractions are less helpful if we can't write functions that
@@ -182,7 +212,13 @@ together only different elements.
 Product {getProduct = 6}
 
 -}
-appendDiff3 = error "TODO"
+appendDiff3 :: (Eq a, Semigroup a) => a -> a -> a -> a
+appendDiff3 x y z
+  | (x == y) && (y == z) = x
+  | x == y = y <> z
+  | y == z = x <> y
+  | x == z = x <> y
+  | otherwise = x <> y <> z
 
 {-
 
@@ -214,9 +250,14 @@ types that can have such an instance.
 -- instance Foldable Weekday where
 -- instance Foldable Gold where
 -- instance Foldable Reward where
--- instance Foldable List1 where
--- instance Foldable Treasure where
-
+instance Foldable List1 where
+  foldMap f (List1 x xs) = (f x) <> (foldMap f xs)
+  foldr f z (List1 x xs) = f x (foldr f z xs)
+instance Foldable Treasure where
+  foldMap _ NoTreasure = mempty
+  foldMap f (SomeTreasure x) = f x
+  foldr _ z NoTreasure = z
+  foldr f z (SomeTreasure x) = f x z
 {-
 
 In the next block of tasks, implement 'Functor' instances for all
@@ -230,8 +271,11 @@ types that can have such an instance.
 -- instance Functor Weekday where
 -- instance Functor Gold where
 -- instance Functor Reward where
--- instance Functor List1 where
--- instance Functor Treasure where
+instance Functor List1 where
+  fmap f (List1 x xs) = List1 (f x) (fmap f xs)
+instance Functor Treasure where
+  fmap _ NoTreasure = NoTreasure
+  fmap f (SomeTreasure x) = SomeTreasure (f x)
 
 {- | Functions are first-class values in Haskell. This means that they
 can be even stored inside other data types as well!
@@ -250,4 +294,5 @@ Just [8,9,10]
 [8,20,3]
 
 -}
-apply = error "TODO"
+apply :: (Functor t) => a -> t (a -> b) -> t b
+apply elem fs = fmap (\f -> f elem) fs 
