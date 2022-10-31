@@ -84,21 +84,26 @@ Tuesday
   'Ordering') and not just 'Weekday'?
 -}
 
-class (Eq a,Enum a, Bounded a) => CircleEnum a where
-  cpred :: a -> a
-  cpred x 
-    | x == minBound = maxBound
-    | otherwise = pred x
+-- class (Eq a,Enum a, Bounded a) => CircleEnum a where
+--   cpred :: a -> a
+--   cpred x 
+--     | x == minBound = maxBound
+--     | otherwise = pred x
 
-  csucc :: a -> a
-  csucc x
-    | x == maxBound = minBound
-    | otherwise = succ x
+--   csucc :: a -> a
+--   csucc x
+--     | x == maxBound = minBound
+--     | otherwise = succ x
 
-instance CircleEnum Weekday
+-- instance CircleEnum Weekday
+
+-- next :: Weekday -> Weekday
+-- next = csucc
 
 next :: Weekday -> Weekday
-next = csucc
+next x
+  | x == maxBound = minBound
+  | otherwise = succ x
 
 {- | Implement a function that calculates number of days from the first
 weekday to the second.
@@ -108,10 +113,16 @@ weekday to the second.
 >>> daysTo Friday Wednesday
 5
 -}
+-- daysTo :: Weekday -> Weekday -> Int
+-- daysTo x y 
+--   | x == y = 0
+--   | otherwise = 1 + daysTo (next x) y
+
 daysTo :: Weekday -> Weekday -> Int
-daysTo x y 
-  | x == y = 0
-  | otherwise = 1 + daysTo (csucc x) y
+daysTo x y =
+  let ix = fromEnum x
+      iy = fromEnum y
+  in if iy > ix then iy - ix else (iy - ix + 7)
 
 {-
 
@@ -162,7 +173,6 @@ data List1 a = List1 a [a]
 
 -- | This should be list append.
 instance Semigroup (List1 a) where
-  (<>) (List1 x []) (List1 y ys) = List1 x (y : ys)
   (<>) (List1 x xs) (List1 y ys) = List1 x (xs ++ y : ys)
 
 
@@ -187,8 +197,7 @@ monsters, you should get a combined treasure and not just the first
   declaration.
 -}
 instance (Semigroup a) => Semigroup (Treasure a) where
-  (<>) NoTreasure NoTreasure = NoTreasure
-  (<>) NoTreasure (SomeTreasure x) = SomeTreasure x
+  (<>) NoTreasure t = t
   (<>) (SomeTreasure x) NoTreasure = SomeTreasure x
   (<>) (SomeTreasure x) (SomeTreasure y) = SomeTreasure (x <> y)
 
