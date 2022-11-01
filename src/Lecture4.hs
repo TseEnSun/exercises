@@ -135,7 +135,21 @@ errors. We will simply return an optional result here.
 -}
 
 parseRow :: String -> Maybe Row
-parseRow = error "TODO"
+parseRow str = 
+   do let parsedStr = split (== ',') str
+      (name : type' : amount : []) <- case parsedStr of (x : y : z : []) -> Just (x : y : z : [])
+                                                        _ -> Nothing
+      rowTradeType <- readMaybe type'
+      rowCost <- readMaybe amount
+      Just (Row name rowTradeType rowCost)
+   where 
+      split :: (Char -> Bool) -> [Char] -> [[Char]]
+      split p str = loop str
+         where loop str 
+                 | null rest = [first]
+                 | otherwise = first : loop (tail rest)
+                  where (first, rest) = span (not . p) str
+
 
 {-
 We have almost all we need to calculate final stats in a simple and
