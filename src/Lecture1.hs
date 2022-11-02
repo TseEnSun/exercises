@@ -39,6 +39,7 @@ module Lecture1
 its behaviour, possible types for the function arguments and write the
 type signature explicitly.
 -}
+makeSnippet :: Int -> [Char] -> [Char]
 makeSnippet limit text = take limit ("Description: " ++ text) ++ "..."
 
 {- | Implement a function that takes two numbers and finds sum of
@@ -121,7 +122,6 @@ The string contains only spaces and/or numbers.
 -}
 strSum :: String -> Int
 strSum str = sum (map read (words str))
-strSum str = sum $ map (\x -> read x :: Int) $ words str
 
     
 {- | Write a function that takes a number and a list of numbers and
@@ -147,8 +147,7 @@ lowerAndGreater n list =
     " elements"
         where
             (gls, lts) = foldl (
-                \(a, b) -> 
-                    \x -> 
+                \(a, b) x -> 
                         if x < n then (a + 1, b) 
                         else if x > n then (a, b + 1)
                         else (a, b)
