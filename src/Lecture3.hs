@@ -61,7 +61,7 @@ of a weekday.
 "Mon"
 -}
 toShortString :: Weekday -> String
-toShortString weekday = (take 3) $ show weekday
+toShortString weekday = take 3 $ show weekday
 
 {- | Write a function that returns next day of the week, following the
 given day.
@@ -122,7 +122,7 @@ daysTo :: Weekday -> Weekday -> Int
 daysTo x y =
   let ix = fromEnum x
       iy = fromEnum y
-  in if iy > ix then iy - ix else (iy - ix + 7)
+  in if iy > ix then iy - ix else iy - ix + 7
 
 {-
 
@@ -138,7 +138,7 @@ newtype Gold = Gold
 
 -- | Addition of gold coins.
 instance Semigroup Gold where
-  (<>) x y = Gold (unGold x + unGold y) 
+  (<>) x y = Gold (unGold x + unGold y)
 
 instance Monoid Gold where
   mempty = Gold 0
@@ -260,7 +260,7 @@ types that can have such an instance.
 -- instance Foldable Gold where
 -- instance Foldable Reward where
 instance Foldable List1 where
-  foldMap f (List1 x xs) = (f x) <> (foldMap f xs)
+  foldMap f (List1 x xs) = f x <> foldMap f xs
   foldr f z (List1 x xs) = f x (foldr f z xs)
 instance Foldable Treasure where
   foldMap _ NoTreasure = mempty
@@ -304,4 +304,4 @@ Just [8,9,10]
 
 -}
 apply :: (Functor t) => a -> t (a -> b) -> t b
-apply elem fs = fmap (\f -> f elem) fs 
+apply e = fmap (\f -> f e)

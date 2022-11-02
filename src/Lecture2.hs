@@ -82,7 +82,7 @@ removeAt :: Int -> [a] -> (Maybe a, [a])
 removeAt _ [] = (Nothing, [])
 removeAt 0 (x:xs) = (Just x, xs)
 removeAt n (x:xs)
-  | n < 0 = (Nothing, (x:xs))
+  | n < 0 = (Nothing, x : xs)
   | otherwise = let (val, rest) = removeAt (n - 1) xs
                 in (val, x : rest)
 
@@ -114,7 +114,7 @@ spaces.
 🕯 HINT: look into Data.Char and Prelude modules for functions you may use.
 -}
 dropSpaces :: String -> String
-dropSpaces = takeWhile (not . isSpace) . dropWhile (isSpace) 
+dropSpaces = takeWhile (not . isSpace) . dropWhile isSpace
 
 {- |
 
@@ -205,11 +205,11 @@ dragonFight knight dragon = fight 0 knight dragon
           knightHealth' = if strikes' `mod` 10 == 0 
                           then knightHealth knight - dragonFirePower dragon
                           else knightHealth knight
-          experience = case dragon of Red _ _ _ _   -> "100"
-                                      Block _ _ _ _ -> "150"
-                                      Green _ _ _   -> "200"
-          treasure' = case dragon of Green _ _ _ -> Nothing
-                                     _           -> Just (treasure dragon)
+          experience = case dragon of Red {}   -> "100"
+                                      Block {} -> "150"
+                                      Green {} -> "200"
+          treasure' = case dragon of Green {} -> Nothing
+                                     _        -> Just (treasure dragon)
         in if endurance' == 0 then "Knight Run Away"
             else if dragonHealth' <= 0 then case treasure' of 
               Just t -> "Dragon dead, the knight got " ++ 
@@ -247,7 +247,7 @@ True
 -}
 isIncreasing :: [Int] -> Bool
 isIncreasing [] = True
-isIncreasing (_:[]) = True
+isIncreasing [_] = True
 isIncreasing (x1 : x2 : xs) = x1 < x2 && isIncreasing (x2 : xs)
 
 {- | Implement a function that takes two lists, sorted in the
@@ -263,9 +263,10 @@ verify that.
 merge :: [Int] -> [Int] -> [Int]
 merge [] ys = ys
 merge xs [] = xs
-merge (x:xs) (y:ys) = if x < y then x : merge (xs) (y:ys)
-                      else if x > y then y : merge (x:xs) (ys)
-                      else x : y : merge xs ys
+merge (x:xs) (y:ys) 
+  |  x < y = x : merge xs (y : ys)
+  |  x > y = y : merge (x : xs) ys
+  |  otherwise = x : y : merge xs ys
 
 {- | Implement the "Merge Sort" algorithm in Haskell. The @mergeSort@
 function takes a list of numbers and returns a new list containing the
@@ -386,8 +387,8 @@ constantFolding expr = formatExpr constants variableExprs
       formatExpr lits vars = case sum lits of 
         0 -> format' vars
         x -> Add (format' vars) (Lit x)
-      format' (x:[]) = x
-      format' (x:xs) = Add x (format' xs)
+      format' [x] = x
+      format' (x : xs) = Add x (format' xs)
       (constants, variableExprs) = parseAcc ([], []) expr
       parseAcc :: ([Int], [Expr]) -> Expr -> ([Int], [Expr])
       parseAcc (lits, vars) expr' = case expr' of
