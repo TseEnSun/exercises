@@ -105,6 +105,7 @@ import Data.Semigroup (Max (..), Min (..), Semigroup (..), Sum (..))
 import Text.Read (readMaybe)
 import Data.Maybe (mapMaybe)
 import System.Environment (getArgs)
+import Control.Monad (guard)
 
 {- In this exercise, instead of writing the entire program from
 scratch, you're offered to complete the missing parts.
@@ -145,6 +146,15 @@ split p = loop
 
 
 parseRow :: String -> Maybe Row
+parseRow str = do
+    [name, type', amount] <- Just $ split (== ',') str
+    guard $ name /= ""
+    rowTradeType <- readMaybe type'
+    rowCost <- readMaybe amount
+    guard $ rowCost >= 0
+    pure $ Row name rowTradeType rowCost
+
+{- The origial implementation
 parseRow str = 
    do let parsedStr = split (== ',') str
       [name, type', amount] <- case parsedStr of [x, y, z] -> Just [x, y, z]
@@ -155,7 +165,7 @@ parseRow str =
       rowCost <- case readMaybe amount of Just x -> if x >= 0 then Just x else Nothing
                                           whatever -> whatever
       Just (Row name' rowTradeType rowCost)
-
+-}
 
 
 {-
