@@ -137,7 +137,7 @@ errors. We will simply return an optional result here.
 -}
 
 split :: (Char -> Bool) -> [Char] -> [[Char]]
-split p str = loop str
+split p = loop
    where loop str
             | null rest = [first]
             | otherwise = first : loop (tail rest)
@@ -274,7 +274,7 @@ implement the next task.
 -}
 
 combineRows :: NonEmpty Row -> Stats
-combineRows rows = sconcat $ fmap rowToStats rows
+combineRows = sconcat . fmap rowToStats
 
 {-
 After we've calculated stats for all rows, we can then pretty-print
